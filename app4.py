@@ -31,12 +31,13 @@ st.markdown("""
         margin-bottom: 2rem;
     }
     .profile-card {
-        background: white;
+        background: #1a1a2e;
         padding: 1.5rem;
         border-radius: 15px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         border-left: 5px solid #667eea;
         margin: 1rem 0;
+        color: white;
     }
     .team-card {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -93,6 +94,28 @@ st.markdown("""
         color: white;
         text-align: center;
     }
+    .score-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        color: white;
+        font-weight: bold;
+        margin: 0.2rem;
+        font-size: 0.9rem;
+    }
+    .score-excellent { background: #2ecc71; }
+    .score-good { background: #f39c12; }
+    .score-average { background: #e67e22; }
+    .score-poor { background: #e74c3c; }
+    .single-score-card {
+        background: #2c2c54;
+        border: 2px solid #667eea;
+        border-radius: 15px;
+        padding: 1rem;
+        margin: 0.5rem 0;
+        color: white;
+        text-align: center;
+    }
     .stButton > button {
         background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
         color: white;
@@ -106,15 +129,30 @@ st.markdown("""
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
-    .quick-team-button {
-        background: linear-gradient(45deg, #ff6b6b, #feca57) !important;
-        font-size: 1.2rem !important;
-        padding: 1rem 3rem !important;
-        animation: glow 2s ease-in-out infinite alternate;
+    /* Remove white backgrounds globally */
+    .stApp {
+        background-color: #0f0f1a;
     }
-    @keyframes glow {
-        from { box-shadow: 0 0 10px #ff6b6b; }
-        to { box-shadow: 0 0 20px #feca57, 0 0 30px #ff6b6b; }
+    .main .block-container {
+        background-color: transparent;
+    }
+    div[data-testid="stVerticalBlock"] > div {
+        background-color: transparent;
+    }
+    .element-container {
+        background-color: transparent;
+    }
+    .pending-request {
+        background: linear-gradient(45deg, #ff9a3c, #ff6b6b) !important;
+        border-left: 5px solid #ff9a3c;
+    }
+    .accepted-request {
+        background: linear-gradient(45deg, #2ecc71, #27ae60) !important;
+        border-left: 5px solid #2ecc71;
+    }
+    .rejected-request {
+        background: linear-gradient(45deg, #e74c3c, #c0392b) !important;
+        border-left: 5px solid #e74c3c;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -125,28 +163,54 @@ USERS_FILE = 'users.json'
 TEAMS_FILE = 'teams.json'
 QUICK_TEAMS_FILE = 'quick_teams.json'
 HACKATHONS_FILE = 'hackathons.json'
+TEAM_REQUESTS_FILE = 'team_requests.json'
+UPLOAD_DIR = 'achievement_uploads'
+
+# Create upload directory if it doesn't exist
+if not os.path.exists(UPLOAD_DIR):
+    os.makedirs(UPLOAD_DIR)
+
+# Initialize session state
+if 'show_instant_match' not in st.session_state:
+    st.session_state['show_instant_match'] = False
+if 'show_create_team' not in st.session_state:
+    st.session_state['show_create_team'] = False
+if 'selected_team' not in st.session_state:
+    st.session_state['selected_team'] = None
 
 def load_json(file_path):
-    if os.path.exists(file_path):
-        with open(file_path, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    else:
+    """Load JSON data from file with error handling"""
+    try:
+        if os.path.exists(file_path):
+            with open(file_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        else:
+            return {}
+    except Exception as e:
+        st.error(f"Error loading {file_path}: {str(e)}")
         return {}
 
 def save_json(file_path, data):
-    with open(file_path, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=4)
+    """Save JSON data to file with error handling"""
+    try:
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
+    except Exception as e:
+        st.error(f"Error saving {file_path}: {str(e)}")
 
 def add_user_profile(profile):
+    """Add user profile to the database"""
     users = load_json(USERS_FILE)
     users[profile['name']] = profile
     save_json(USERS_FILE, users)
 
 def get_all_users():
+    """Get all user profiles"""
     users = load_json(USERS_FILE)
     return list(users.values())
 
 def save_team(team_data):
+    """Save team data"""
     teams = load_json(TEAMS_FILE)
     team_id = f"team_{len(teams) + 1}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
     teams[team_id] = team_data
@@ -154,10 +218,12 @@ def save_team(team_data):
     return team_id
 
 def get_all_teams():
+    """Get all teams"""
     teams = load_json(TEAMS_FILE)
     return list(teams.values())
 
 def save_quick_team(quick_team_data):
+    """Save quick team data"""
     quick_teams = load_json(QUICK_TEAMS_FILE)
     team_id = f"quick_{len(quick_teams) + 1}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
     quick_teams[team_id] = quick_team_data
@@ -165,8 +231,220 @@ def save_quick_team(quick_team_data):
     return team_id
 
 def get_quick_teams():
+    """Get all quick teams"""
     quick_teams = load_json(QUICK_TEAMS_FILE)
     return list(quick_teams.values())
+
+def get_team_requests():
+    """Get all team requests"""
+    return load_json(TEAM_REQUESTS_FILE)
+
+def save_team_request(request_data):
+    """Save a team request"""
+    requests = get_team_requests()
+    request_id = f"request_{len(requests) + 1}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+    requests[request_id] = request_data
+    save_json(TEAM_REQUESTS_FILE, requests)
+    return request_id
+
+def update_team_request(request_id, updates):
+    """Update a team request"""
+    requests = get_team_requests()
+    if request_id in requests:
+        requests[request_id].update(updates)
+        save_json(TEAM_REQUESTS_FILE, requests)
+        return True
+    return False
+
+def get_user_team_requests(username):
+    """Get all team requests for a specific user"""
+    requests = get_team_requests()
+    user_requests = []
+    
+    for req_id, req_data in requests.items():
+        if req_data.get('to_user') == username or req_data.get('from_user') == username:
+            user_requests.append((req_id, req_data))
+    
+    return user_requests
+
+def get_team_by_id(team_id):
+    """Get a specific team by ID"""
+    teams = load_json(TEAMS_FILE)
+    return teams.get(team_id)
+
+def update_team(team_id, updates):
+    """Update a team"""
+    teams = load_json(TEAMS_FILE)
+    if team_id in teams:
+        teams[team_id].update(updates)
+        save_json(TEAMS_FILE, teams)
+        return True
+    return False
+
+# ML Skillset Enhancer Functions
+def vectorize_profiles(profiles, all_skills):
+    """Convert profiles to vector representation based on skills"""
+    matrix = []
+    for p in profiles:
+        skills_lower = [s.lower() for s in p.get('skills', [])]
+        row = [1 if skill in skills_lower else 0 for skill in all_skills]
+        matrix.append(row)
+    return np.array(matrix)
+
+def find_best_matches(user_profile, profiles, top_k=5):
+    """Find best matches using cosine similarity"""
+    all_skills = set()
+    for p in profiles:
+        all_skills.update([s.lower() for s in p.get('skills', [])])
+    all_skills.update([s.lower() for s in user_profile.get('skills', [])])
+    all_skills = sorted(list(all_skills))
+
+    if not all_skills:
+        return []
+
+    try:
+        matrix = vectorize_profiles(profiles, all_skills)
+        user_vec = np.array([[1 if s in [sk.lower() for sk in user_profile.get('skills', [])] else 0 for s in all_skills]])
+
+        if matrix.size > 0 and user_vec.size > 0:
+            sims = cosine_similarity(user_vec, matrix)[0]
+            idx_sim = sorted([(i, s) for i, s in enumerate(sims) if s < 0.999], key=lambda x: x[1], reverse=True)[:top_k]
+
+            user_avail = set(user_profile.get('availability', []))
+            matches = []
+            for idx, sim in idx_sim:
+                if idx < len(profiles):
+                    candidate = profiles[idx]
+                    cand_avail = set(candidate.get('availability', []))
+                    # Check overlapping availability
+                    if user_avail and cand_avail and user_avail.isdisjoint(cand_avail):
+                        continue
+                    matches.append((candidate, sim))
+            return matches
+    except Exception as e:
+        st.error(f"Error in finding matches: {str(e)}")
+        return []
+    
+    return []
+
+def analyze_fit(cat_sel, dom_sel, selected_skills, categories):
+    """Analyze skill fit for a specific domain"""
+    if not categories or cat_sel not in categories or dom_sel not in categories[cat_sel]['domains']:
+        return None
+
+    domain_skills = set(s.lower() for s in categories[cat_sel]['domains'][dom_sel])
+    user_skills = set(s.lower() for s in selected_skills)
+
+    matched = user_skills.intersection(domain_skills)
+    missing = domain_skills.difference(user_skills)
+
+    max_score = max(len(domain_skills), 10)
+    score = min(100, (len(matched) / max_score) * 100) if max_score > 0 else 0
+
+    if score >= 80:
+        rec = "Excellent fit! Strong skills for this role."
+    elif score >= 60:
+        rec = f"Good fit; consider improving missing skills: {', '.join(list(missing)[:3])}"
+    elif score >= 40:
+        rec = f"Moderate fit; focus on acquiring key skills: {', '.join(list(missing)[:3])}"
+    else:
+        rec = f"Low fit; strongly recommend gaining these skills: {', '.join(list(missing)[:3])}"
+
+    return {
+        "score": score,
+        "matched": matched,
+        "missing": missing,
+        "recommendation": rec,
+    }
+
+def calculate_domain_scores(user_profile, categories):
+    """Calculate domain match scores for a user"""
+    user_skills = set(skill.lower() for skill in user_profile.get('skills', []))
+    domain_scores = {}
+    
+    for cat, cat_info in categories.items():
+        for domain, skills in cat_info.get("domains", {}).items():
+            domain_skills = set(skill.lower() for skill in skills)
+            if domain_skills:
+                matched = user_skills.intersection(domain_skills)
+                score = (len(matched) / len(domain_skills)) * 100
+                domain_scores[domain] = {
+                    'score': score,
+                    'matched': matched,
+                    'missing': domain_skills - user_skills,
+                    'category': cat
+                }
+    
+    return domain_scores
+
+def get_score_class(score):
+    """Get CSS class for score badge"""
+    if score >= 80:
+        return "score-excellent"
+    elif score >= 60:
+        return "score-good"
+    elif score >= 40:
+        return "score-average"
+    else:
+        return "score-poor"
+
+def get_score_label(score):
+    """Get label for score"""
+    if score >= 80:
+        return "Excellent"
+    elif score >= 60:
+        return "Good"
+    elif score >= 40:
+        return "Average"
+    else:
+        return "Needs Work"
+
+def display_profile_card_with_scores(user, categories, show_scores=True, role=None):
+    """Display a profile card with single domain score"""
+    with st.container():
+        role_emoji = {"Team Lead": "👑", "Tech Lead": "🚀", "Designer": "🎨", "Backend Dev": "⚙", 
+                     "Frontend Dev": "💻", "Data Specialist": "📊", "Business Analyst": "📈"}.get(role, "👤")
+        
+        col1, col2 = st.columns([3, 1])
+        
+        with col1:
+            st.markdown(f"""
+            <div class="profile-card">
+                <h3>{role_emoji} {user['name']} {f"({role})" if role else ""}</h3>
+                <p><strong>📝 Bio:</strong> {user.get('bio', 'Ready to hack!')[:100]}...</p>
+                <p><strong>🎯 Domain:</strong> {', '.join(user.get('domain', ['General']))}</p>
+                <p><strong>📈 Experience:</strong> {user.get('experience_level', 'Intermediate')}</p>
+                <p><strong>⏰ Availability:</strong> {', '.join(user.get('availability', ['Flexible']))}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Skills as badges
+            if user.get('skills'):
+                skills_html = ""
+                for skill in user['skills'][:8]:  # Limit to 8 skills for display
+                    skills_html += f'<span class="skill-badge">{skill}</span>'
+                if len(user['skills']) > 8:
+                    skills_html += f'<span class="skill-badge">+{len(user["skills"]) - 8} more</span>'
+                st.markdown(skills_html, unsafe_allow_html=True)
+        
+        with col2:
+            if show_scores and categories:
+                domain_scores = calculate_domain_scores(user, categories)
+                
+                if domain_scores:
+                    # Get the highest scoring domain only
+                    best_domain, best_data = max(domain_scores.items(), key=lambda x: x[1]['score'])
+                    score = best_data['score']
+                    score_class = get_score_class(score)
+                    score_label = get_score_label(score)
+                    
+                    st.markdown(f"""
+                    <div class="single-score-card">
+                        <h4>🎯 Best Match</h4>
+                        <strong>{best_domain}</strong><br>
+                        <span class="score-badge {score_class}">{score:.0f}% - {score_label}</span>
+                    </div>
+                    """, unsafe_allow_html=True)
 
 def create_instant_team_match(user_profile, hackathon_context=None):
     """Create instant team matches based on complementary skills and hackathon needs"""
@@ -252,16 +530,17 @@ def calculate_team_compatibility(members):
     for member in members:
         all_skills.update(s.lower() for s in member.get('skills', []))
     
-    skill_diversity = len(all_skills) / (sum(len(member.get('skills', [])) for member in members) + 1)
+    total_skills = sum(len(member.get('skills', [])) for member in members)
+    skill_diversity = len(all_skills) / (total_skills + 1) if total_skills > 0 else 0
     
     # Experience level balance
     exp_levels = [member.get('experience_level', 'Intermediate') for member in members]
-    exp_variety = len(set(exp_levels)) / len(exp_levels)
+    exp_variety = len(set(exp_levels)) / len(exp_levels) if exp_levels else 0
     
     # Availability overlap
     avail_sets = [set(member.get('availability', [])) for member in members if member.get('availability')]
     if avail_sets:
-        common_avail = set.intersection(*avail_sets)
+        common_avail = set.intersection(*avail_sets) if len(avail_sets) > 1 else avail_sets[0]
         avail_score = len(common_avail) / 5  # Assuming max 5 availability options
     else:
         avail_score = 0.5
@@ -270,51 +549,367 @@ def calculate_team_compatibility(members):
     domains = set()
     for member in members:
         domains.update(member.get('domain', []))
-    domain_diversity = len(domains) / len(members)
+    domain_diversity = len(domains) / len(members) if members else 0
     
     total_score = (skill_diversity * 0.4 + exp_variety * 0.2 + avail_score * 0.2 + domain_diversity * 0.2) * 100
     return min(100, total_score)
 
-def display_profile_card(user, score=None, role=None):
-    """Display a beautiful profile card"""
-    with st.container():
-        role_emoji = {"Team Lead": "👑", "Tech Lead": "🚀", "Designer": "🎨", "Backend Dev": "⚙", 
-                     "Frontend Dev": "💻", "Data Specialist": "📊", "Business Analyst": "📈"}.get(role, "👤")
-        
-        st.markdown(f"""
-        <div class="profile-card">
-            <h3>{role_emoji} {user['name']} {f"({role})" if role else ""}</h3>
-            {f"<p><strong>🎯 Match Score:</strong> {score:.0%}</p>" if score else ""}
-            <p><strong>📝 Bio:</strong> {user.get('bio', 'Ready to hack!')[:100]}...</p>
-            <p><strong>🎯 Domain:</strong> {', '.join(user.get('domain', ['General']))}</p>
-            <p><strong>📈 Experience:</strong> {user.get('experience_level', 'Intermediate')}</p>
-            <p><strong>⏰ Availability:</strong> {', '.join(user.get('availability', ['Flexible']))}</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Skills as badges
-        if user.get('skills'):
-            skills_html = ""
-            for skill in user['skills'][:8]:  # Limit to 8 skills for display
-                skills_html += f'<span class="skill-badge">{skill}</span>'
-            if len(user['skills']) > 8:
-                skills_html += f'<span class="skill-badge">+{len(user["skills"]) - 8} more</span>'
-            st.markdown(skills_html, unsafe_allow_html=True)
-
-def display_quick_team_card(team_data):
-    """Display quick team formation card"""
-    compatibility = calculate_team_compatibility(team_data.get('members', []))
-    urgency_class = "urgent-badge" if team_data.get('urgency', 'normal') == 'high' else ""
+def show_browse_users_with_ml():
+    """Enhanced user browsing with ML-powered domain scoring - FIXED VERSION"""
+    st.markdown("## 👥 Browse Hackers with Smart Matching")
     
-    st.markdown(f"""
-    <div class="team-card">
-        <h3>⚡ {team_data.get('name', 'Quick Team')}</h3>
-        <p><strong>🎯 Goal:</strong> {team_data.get('goal', 'Build something amazing!')}</p>
-        <p><strong>👥 Size:</strong> {len(team_data.get('members', []))} / {team_data.get('target_size', 4)} members</p>
-        <p><strong>🔥 Compatibility:</strong> {compatibility:.0f}%</p>
-        <p><strong>⏱ Formation Time:</strong> {team_data.get('formation_time', 'Just now')}</p>
-    </div>
-    """, unsafe_allow_html=True)
+    users = get_all_users()
+    categories = load_json(CATEGORIES_FILE)
+    
+    if not users:
+        st.info("No users registered yet. Be the first!")
+        return
+    
+    # Enhanced filters with ML features
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        available_now = st.checkbox("⚡ Available Now", help="Show only users available for immediate team formation")
+    
+    with col2:
+        experience_filter = st.selectbox("📈 Min Experience", ["Any", "Beginner", "Intermediate", "Advanced", "Expert"])
+    
+    with col3:
+        all_domains = set()
+        for user in users:
+            all_domains.update(user.get('domain', []))
+        domain_filter = st.selectbox("🎯 Domain Filter", ["Any"] + sorted(list(all_domains)))
+    
+    with col4:
+        min_domain_score = st.slider("🎯 Min Domain Score", 0, 100, 0, help="Minimum domain match score")
+    
+    # Domain-based matching
+    search_domain = ""
+    if categories:
+        st.markdown("### 🤖 Domain-Based Smart Search")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            search_category = st.selectbox("Search by Category", [""] + list(categories.keys()))
+        
+        with col2:
+            if search_category:
+                domain_options = list(categories[search_category].get("domains", {}).keys())
+                search_domain = st.selectbox("Search by Domain", [""] + domain_options)
+    
+    # Apply filters
+    filtered_users = users.copy()
+    
+    if available_now:
+        filtered_users = [u for u in filtered_users if 'Flexible' in u.get('availability', []) or 'Right Now' in u.get('availability', [])]
+    
+    if experience_filter != "Any":
+        filtered_users = [u for u in filtered_users if u.get('experience_level') == experience_filter]
+    
+    if domain_filter != "Any":
+        filtered_users = [u for u in filtered_users if domain_filter in u.get('domain', [])]
+    
+    # Filter by domain score if ML search is active
+    if categories and search_domain and min_domain_score > 0:
+        scored_users = []
+        for user in filtered_users:
+            domain_scores = calculate_domain_scores(user, categories)
+            if search_domain in domain_scores and domain_scores[search_domain]['score'] >= min_domain_score:
+                scored_users.append((user, domain_scores[search_domain]['score']))
+        
+        # Sort by domain score
+        scored_users.sort(key=lambda x: x[1], reverse=True)
+        filtered_users = [user for user, score in scored_users]
+    
+    # Display results
+    st.markdown(f"### 👥 {len(filtered_users)} Hackers Found")
+    
+    if search_domain and categories:
+        st.info(f"🎯 Showing users ranked by {search_domain} domain expertise")
+    
+    for i, user in enumerate(filtered_users):
+        col1, col2 = st.columns([4, 1])
+        
+        with col1:
+            # Show domain score for searched domain only if searching
+            if search_domain and categories:
+                domain_scores = calculate_domain_scores(user, categories)
+                if search_domain in domain_scores:
+                    score = domain_scores[search_domain]['score']
+                    score_class = get_score_class(score)
+                    score_label = get_score_label(score)
+                    st.markdown(f"""
+                    <div style="margin-bottom: 1rem;">
+                        <strong>🎯 {search_domain} Match:</strong>
+                        <span class="score-badge {score_class}">{score:.0f}% - {score_label}</span>
+                    </div>
+                    """, unsafe_allow_html=True)
+            
+            display_profile_card_with_scores(user, categories, show_scores=True)
+        
+        with col2:
+            st.markdown("<br><br>", unsafe_allow_html=True)
+            if st.button(f"⚡ Quick Team", key=f"qt_{user['name']}_{i}", help="Form instant team with this user"):
+                # Simulate quick team formation
+                matches = create_instant_team_match(user)
+                if matches:
+                    st.success(f"✅ Team formed with {user['name']}!")
+                    # Store the team formation
+                    team_data = {
+                        'name': f"QuickTeam_{datetime.now().strftime('%H%M%S')}",
+                        'members': [user] + [match[0] for match in matches[:2]],
+                        'formation_time': datetime.now().strftime('%H:%M:%S'),
+                        'compatibility': calculate_team_compatibility([user] + [match[0] for match in matches[:2]]),
+                        'type': 'instant_match'
+                    }
+                    save_quick_team(team_data)
+                else:
+                    st.warning("No immediate matches found")
+            
+            if st.button(f"💬 Contact", key=f"contact_{user['name']}_{i}"):
+                st.info(f"Contact request sent to {user['name']}")
+            
+            if st.button(f"📊 View All Scores", key=f"scores_{user['name']}_{i}", help="View detailed domain scores"):
+                with st.expander(f"{user['name']}'s All Domain Scores", expanded=True):
+                    if categories:
+                        domain_scores = calculate_domain_scores(user, categories)
+                        
+                        if domain_scores:
+                            # Show top 5 domains only
+                            sorted_domains = sorted(domain_scores.items(), key=lambda x: x[1]['score'], reverse=True)[:5]
+                            
+                            for domain, data in sorted_domains:
+                                score = data['score']
+                                score_class = get_score_class(score)
+                                score_label = get_score_label(score)
+                                
+                                st.markdown(f"""
+                                <div style="background: #2c2c54; padding: 0.8rem; border-radius: 10px; margin: 0.3rem 0; color: white;">
+                                    <strong>{domain}</strong> ({data['category']})<br>
+                                    <span class="score-badge {score_class}">{score:.0f}% - {score_label}</span>
+                                    <br><small>{len(data['matched'])} matched skills, {len(data['missing'])} missing</small>
+                                </div>
+                                """, unsafe_allow_html=True)
+
+def show_group_management():
+    """Manage groups and categories"""
+    st.markdown("## 🏢 Group & Category Management")
+    
+    categories = load_json(CATEGORIES_FILE)
+    if not categories:
+        categories = {}
+    
+    tab1, tab2 = st.tabs(["📋 View Groups", "➕ Add New Group"])
+    
+    with tab1:
+        st.markdown("### Existing Groups & Categories")
+        
+        if not categories:
+            st.info("No groups created yet. Add some groups to get started!")
+        else:
+            for category, cat_info in categories.items():
+                with st.expander(f"📁 {category}"):
+                    if "domains" in cat_info:
+                        for domain, skills in cat_info["domains"].items():
+                            st.markdown(f"**{domain}**")
+                            st.write(f"Skills: {', '.join(skills)}")
+                            if st.button(f"Delete {domain}", key=f"del_{category}_{domain}"):
+                                if category in categories and domain in categories[category]["domains"]:
+                                    del categories[category]["domains"][domain]
+                                    if not categories[category]["domains"]:
+                                        del categories[category]
+                                    save_json(CATEGORIES_FILE, categories)
+                                    st.success(f"Deleted {domain} from {category}")
+                                    st.rerun()
+    
+    with tab2:
+        st.markdown("### Add New Group or Category")
+        
+        with st.form("group_form"):
+            new_cat = st.text_input("New Group Type (Category)", max_chars=50)
+            new_dom = st.text_input("New Domain/Subgroup", max_chars=50)
+            new_sk = st.text_area("Skills (comma separated)")
+            subm = st.form_submit_button("Add Group")
+            
+            if subm:
+                if not (new_cat and new_dom):
+                    st.warning("Category and domain are required.")
+                else:
+                    new_cat = new_cat.strip()
+                    new_dom = new_dom.strip()
+                    sk_list = [s.strip() for s in new_sk.split(",") if s.strip()]
+                    
+                    if new_cat not in categories:
+                        categories[new_cat] = {"domains": {}}
+                    
+                    if new_dom in categories[new_cat]["domains"]:
+                        st.warning(f"Domain '{new_dom}' already exists in '{new_cat}'.")
+                    else:
+                        categories[new_cat]["domains"][new_dom] = sk_list
+                        save_json(CATEGORIES_FILE, categories)
+                        st.success(f"Added '{new_dom}' under '{new_cat}'.")
+
+def show_create_team_form():
+    """Form to create a new team"""
+    st.markdown("## 🚀 Create a New Team")
+    
+    users = get_all_users()
+    if not users:
+        st.warning("No users available to form a team. Create profiles first!")
+        return
+    
+    with st.form("create_team_form"):
+        team_name = st.text_input("Team Name", placeholder="Awesome Hackers Team")
+        team_description = st.text_area("Team Description", placeholder="What's your team's mission?")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            target_size = st.slider("Target Team Size", 2, 8, 4)
+            focus_area = st.selectbox("Primary Focus Area", 
+                                    ["Web Development", "Mobile App", "AI/ML", "Data Science", 
+                                     "IoT", "Blockchain", "Game Development", "Open Choice"])
+        with col2:
+            project_type = st.selectbox("Project Type", 
+                                      ["New Idea", "Existing Project", "Open Source Contribution", "Research"])
+            hackathon_name = st.text_input("Hackathon Name (if applicable)", placeholder="e.g., Hack the North")
+        
+        # Team members selection
+        st.markdown("### 👥 Select Team Members")
+        available_members = [user for user in users]
+        selected_members = st.multiselect("Choose team members", 
+                                         [user['name'] for user in available_members],
+                                         help="Select other hackers to join your team")
+        
+        # Privacy settings
+        st.markdown("### 🔒 Team Privacy")
+        col1, col2 = st.columns(2)
+        with col1:
+            team_privacy = st.selectbox("Team Visibility", 
+                                      ["Public - Anyone can join", 
+                                       "Private - Approval required", 
+                                       "Invite only"])
+        with col2:
+            application_required = st.checkbox("Require application", value=True)
+        
+        submitted = st.form_submit_button("🚀 Create Team", use_container_width=True)
+        
+        if submitted:
+            if not team_name:
+                st.error("Team name is required!")
+                return
+            
+            if not selected_members:
+                st.error("Please select at least one team member!")
+                return
+            
+            # Get full user objects for selected members
+            team_members = []
+            for member_name in selected_members:
+                member = next((u for u in users if u['name'] == member_name), None)
+                if member:
+                    team_members.append(member)
+            
+            # Create team data
+            team_data = {
+                'name': team_name,
+                'description': team_description,
+                'members': team_members,
+                'target_size': target_size,
+                'focus_area': focus_area,
+                'project_type': project_type,
+                'hackathon_name': hackathon_name,
+                'privacy': team_privacy,
+                'application_required': application_required,
+                'created_date': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                'status': 'active',
+                'compatibility': calculate_team_compatibility(team_members)
+            }
+            
+            # Save team
+            team_id = save_team(team_data)
+            st.success(f"✅ Team '{team_name}' created successfully!")
+            
+            # Send join requests to selected members if private team
+            if team_privacy != "Public - Anyone can join":
+                for member in team_members:
+                    request_data = {
+                        'team_id': team_id,
+                        'team_name': team_name,
+                        'from_user': "System",  # Or the creator's name if available
+                        'to_user': member['name'],
+                        'status': 'pending',
+                        'message': f"You've been invited to join {team_name}",
+                        'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    }
+                    save_team_request(request_data)
+                
+                st.info("📨 Join requests sent to selected members!")
+            
+            st.session_state['show_create_team'] = False
+
+def show_team_requests(username):
+    """Show team requests for a user"""
+    st.markdown("## 📨 Team Requests")
+    
+    user_requests = get_user_team_requests(username)
+    if not user_requests:
+        st.info("You don't have any team requests yet.")
+        return
+    
+    pending_requests = [(req_id, req) for req_id, req in user_requests if req.get('status') == 'pending']
+    accepted_requests = [(req_id, req) for req_id, req in user_requests if req.get('status') == 'accepted']
+    rejected_requests = [(req_id, req) for req_id, req in user_requests if req.get('status') == 'rejected']
+    
+    if pending_requests:
+        st.markdown("### ⏳ Pending Requests")
+        for req_id, request in pending_requests:
+            status_class = "pending-request"
+            st.markdown(f"""
+            <div class="profile-card {status_class}">
+                <h3>👥 {request.get('team_name', 'Unknown Team')}</h3>
+                <p><strong>From:</strong> {request.get('from_user', 'Unknown')}</p>
+                <p><strong>Message:</strong> {request.get('message', 'No message')}</p>
+                <p><strong>Date:</strong> {request.get('timestamp', 'Unknown')}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button(f"✅ Accept", key=f"accept_{req_id}"):
+                    update_team_request(req_id, {'status': 'accepted'})
+                    st.success("Request accepted!")
+                    st.rerun()
+            with col2:
+                if st.button(f"❌ Reject", key=f"reject_{req_id}"):
+                    update_team_request(req_id, {'status': 'rejected'})
+                    st.info("Request rejected.")
+                    st.rerun()
+    
+    if accepted_requests:
+        st.markdown("### ✅ Accepted Requests")
+        for req_id, request in accepted_requests:
+            status_class = "accepted-request"
+            st.markdown(f"""
+            <div class="profile-card {status_class}">
+                <h3>👥 {request.get('team_name', 'Unknown Team')}</h3>
+                <p><strong>From:</strong> {request.get('from_user', 'Unknown')}</p>
+                <p><strong>Status:</strong> Accepted</p>
+                <p><strong>Date:</strong> {request.get('timestamp', 'Unknown')}</p>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    if rejected_requests:
+        st.markdown("### ❌ Rejected Requests")
+        for req_id, request in rejected_requests:
+            status_class = "rejected-request"
+            st.markdown(f"""
+            <div class="profile-card {status_class}">
+                <h3>👥 {request.get('team_name', 'Unknown Team')}</h3>
+                <p><strong>From:</strong> {request.get('from_user', 'Unknown')}</p>
+                <p><strong>Status:</strong> Rejected</p>
+                <p><strong>Date:</strong> {request.get('timestamp', 'Unknown')}</p>
+            </div>
+            """, unsafe_allow_html=True)
 
 def main():
     # Header with CYHI branding
@@ -330,19 +925,18 @@ def main():
     if not categories:
         categories = create_sample_categories()
 
-    # Navigation with enhanced quick team options
+    # Navigation
     st.sidebar.markdown("## ⚡ Quick Actions")
     
-    # Quick team formation button
-    if st.sidebar.button("🚀 INSTANT TEAM MATCH", key="instant_team", help="Get matched with a team in under 60 seconds!"):
+    if st.sidebar.button("🚀 INSTANT TEAM MATCH", help="Get matched with a team in under 60 seconds!"):
         st.session_state['show_instant_match'] = True
     
     st.sidebar.markdown("---")
     st.sidebar.markdown("## 🧭 Navigation")
     
     page = st.sidebar.radio("Choose your action:", 
-                           ["🏠 Home", "⚡ Quick Teams", "👤 Create Profile", "🔍 Find Teams", 
-                            "🏆 Active Hackathons", "📊 Team Analytics", "👥 Browse Users"])
+                           ["🏠 Home", "⚡ Quick Teams", "👤 Create Profile", "🔍 Find/Create Teams", 
+                            "📊 Team Analytics", "👥 Smart Browse", "🏢 Group Management", "📨 My Requests"])
 
     if page == "🏠 Home":
         show_home_page()
@@ -352,12 +946,19 @@ def main():
         show_create_profile_page(categories)
     elif page == "🔍 Find Teams":
         show_find_teams_page()
-    elif page == "🏆 Active Hackathons":
-        show_hackathons_page()
     elif page == "📊 Team Analytics":
         show_team_analytics_page()
-    elif page == "👥 Browse Users":
-        show_browse_users_page()
+    elif page == "👥 Smart Browse":
+        show_browse_users_with_ml()
+    elif page == "🏢 Group Management":
+        show_group_management()
+    elif page == "📨 My Requests":
+        # Get current user (for demo, using first user)
+        users = get_all_users()
+        if users:
+            show_team_requests(users[0]['name'])
+        else:
+            st.info("No users found. Create a profile first!")
     
     # Handle instant team matching
     if st.session_state.get('show_instant_match', False):
@@ -390,7 +991,7 @@ def show_home_page():
         """, unsafe_allow_html=True)
     
     with col3:
-        avg_team_time = "< 2 min"  # Mock average team formation time
+        avg_team_time = "< 2 min"
         st.markdown(f"""
         <div class="metric-card">
             <h2>⏱</h2>
@@ -400,7 +1001,7 @@ def show_home_page():
         """, unsafe_allow_html=True)
     
     with col4:
-        success_rate = 92  # Mock success rate
+        success_rate = 71
         st.markdown(f"""
         <div class="metric-card">
             <h2>🎯</h2>
@@ -431,11 +1032,26 @@ def show_home_page():
     # Recent quick teams
     if quick_teams:
         st.markdown("## 🔥 Recently Formed Quick Teams")
-        for i, team in enumerate(quick_teams[-3:]):
+        for team in quick_teams[-3:]:
             display_quick_team_card(team)
 
+def display_quick_team_card(team_data):
+    """Display quick team formation card"""
+    compatibility = calculate_team_compatibility(team_data.get('members', []))
+    urgency_class = "urgent-badge" if team_data.get('urgency', 'normal') == 'high' else ""
+    
+    st.markdown(f"""
+    <div class="team-card">
+        <h3>⚡ {team_data.get('name', 'Quick Team')}</h3>
+        <p><strong>🎯 Goal:</strong> {team_data.get('goal', 'Build something amazing!')}</p>
+        <p><strong>👥 Size:</strong> {len(team_data.get('members', []))} / {team_data.get('target_size', 4)} members</p>
+        <p><strong>🔥 Compatibility:</strong> {compatibility:.0f}%</p>
+        <p><strong>⏱ Formation Time:</strong> {team_data.get('formation_time', 'Just now')}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
 def show_quick_teams_page():
-    """Enhanced quick team formation page - the core CYHI feature"""
+    """Enhanced quick team formation page"""
     st.markdown("## ⚡ CYHI Quick Teams - Form Teams in Minutes!")
     
     # Quick stats at top
@@ -452,7 +1068,7 @@ def show_quick_teams_page():
         st.markdown("""
         <div class="quick-match-card">
             <h3>🎯 Match Accuracy</h3>
-            <h2>92%</h2>
+            <h2>68%</h2>
         </div>
         """, unsafe_allow_html=True)
     
@@ -464,27 +1080,12 @@ def show_quick_teams_page():
         </div>
         """.format(len(get_quick_teams())), unsafe_allow_html=True)
     
-    # Quick team formation options
-    st.markdown("### Choose Your Quick Team Formation Method:")
-    
-    tab1, tab2, tab3 = st.tabs(["🚀 Instant Match", "🎯 Smart Assembly", "🏆 Hackathon Ready"])
-    
-    with tab1:
-        show_instant_match_form()
-    
-    with tab2:
-        show_smart_assembly_form()
-    
-    with tab3:
-        show_hackathon_ready_form()
-
-def show_instant_match_form():
-    """Instant team matching form"""
-    st.markdown("#### ⚡ Get matched instantly with available teammates!")
+    # Quick team formation form
+    st.markdown("### 🚀 Form Your Team Now")
     
     users = get_all_users()
     if len(users) < 2:
-        st.warning("⚠ Need at least 2 registered users for team matching. Create profiles first!")
+        st.warning("Need at least 2 registered users for team matching. Create profiles first!")
         return
     
     with st.form("instant_match_form"):
@@ -508,26 +1109,21 @@ def show_instant_match_form():
         match_button = st.form_submit_button("⚡ FIND MY TEAM NOW!", use_container_width=True)
         
         if match_button:
-            # Find the user profile
             user_profile = next((u for u in users if u['name'] == user_name), None)
             if user_profile:
                 with st.spinner("🔍 Finding your perfect teammates..."):
                     import time
-                    time.sleep(2)  # Simulate processing time
+                    time.sleep(2)
                     
                     matches = create_instant_team_match(user_profile)
                     
                     if matches:
                         st.success("🎉 Team formed successfully!")
                         
-                        # Create team members list
                         team_members = [user_profile] + [match[0] for match in matches[:team_size-1]]
-                        
-                        # Generate roles
                         roles = generate_team_roles(team_members, focus_area)
                         compatibility = calculate_team_compatibility(team_members)
                         
-                        # Save quick team
                         quick_team_data = {
                             'name': f"QuickTeam_{datetime.now().strftime('%H%M%S')}",
                             'members': team_members,
@@ -543,21 +1139,19 @@ def show_instant_match_form():
                         
                         team_id = save_quick_team(quick_team_data)
                         
-                        # Display team
                         st.markdown(f"""
                         ### 🏆 Your Team: QuickTeam_{datetime.now().strftime('%H%M%S')}
                         *🔥 Compatibility Score: {compatibility:.0f}%*
                         """)
                         
+                        categories = load_json(CATEGORIES_FILE)
                         for i, member in enumerate(team_members):
                             role = None
                             for role_name, role_info in roles.items():
                                 if role_info.get('assigned') == member['name']:
                                     role = role_name
                                     break
-                            display_profile_card(member, 
-                                               score=matches[i-1][1]/10 if i > 0 else 1.0,
-                                               role=role)
+                            display_profile_card_with_scores(member, categories, show_scores=True, role=role)
                         
                         # Next steps
                         st.markdown("### 🚀 Next Steps:")
@@ -565,485 +1159,18 @@ def show_instant_match_form():
                         
                         with col1:
                             if st.button("💬 Start Team Chat"):
-                                st.info("Team chat initiated! Check your notifications.")
+                                st.info("Team chat initiated!")
                         
                         with col2:
                             if st.button("📋 Create Project Board"):
-                                st.info("Project board created! Link shared with team.")
+                                st.info("Project board created!")
                         
                         with col3:
                             if st.button("📅 Schedule Kickoff"):
-                                st.info("Kickoff meeting scheduled! Calendar invites sent.")
+                                st.info("Kickoff meeting scheduled!")
                     
                     else:
-                        st.warning("😅 No compatible teammates found right now. Try adjusting your preferences or create more profiles!")
-
-def show_smart_assembly_form():
-    """Smart team assembly with more control"""
-    st.markdown("#### 🎯 Smart team assembly with role-based matching")
-    
-    users = get_all_users()
-    if len(users) < 3:
-        st.warning("⚠ Need at least 3 users for smart assembly!")
-        return
-    
-    with st.form("smart_assembly_form"):
-        st.markdown("*Step 1: Define your ideal team structure*")
-        
-        required_roles = st.multiselect("🎭 Required Roles", 
-                                      ["Team Lead", "Tech Lead", "Designer", "Backend Dev", 
-                                       "Frontend Dev", "Data Specialist", "Business Analyst"],
-                                      default=["Tech Lead", "Designer"])
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            min_experience = st.selectbox("📈 Minimum Experience Level", 
-                                        ["Beginner", "Intermediate", "Advanced", "Expert"])
-            project_type = st.selectbox("🚀 Project Type",
-                                      ["Startup MVP", "Hackathon Project", "Open Source", "Research"])
-        
-        with col2:
-            collaboration_style = st.selectbox("🤝 Collaboration Style",
-                                             ["Remote", "In-person", "Hybrid", "Flexible"])
-            timeline = st.selectbox("⏰ Project Timeline",
-                                   ["24 hours", "48 hours", "1 week", "2-4 weeks", "1+ month"])
-        
-        project_description = st.text_area("📝 Project Description",
-                                         placeholder="Describe your project vision and goals...")
-        
-        assemble_button = st.form_submit_button("🎯 ASSEMBLE SMART TEAM!", use_container_width=True)
-        
-        if assemble_button and project_description and required_roles:
-            with st.spinner("🧠 Using AI to find the perfect team combination..."):
-                import time
-                time.sleep(3)  # Simulate AI processing
-                
-                # Smart matching algorithm
-                available_users = [u for u in users if u.get('experience_level', 'Intermediate') != 'Beginner' or min_experience == 'Beginner']
-                
-                # Create optimal team based on roles
-                selected_team = []
-                used_users = set()
-                
-                for role in required_roles:
-                    best_candidate = None
-                    best_score = 0
-                    
-                    role_skills = {
-                        'Team Lead': ['leadership', 'management', 'communication'],
-                        'Tech Lead': ['programming', 'architecture', 'technical'],
-                        'Designer': ['design', 'ui', 'ux', 'figma'],
-                        'Backend Dev': ['python', 'java', 'database', 'api'],
-                        'Frontend Dev': ['react', 'javascript', 'html', 'css'],
-                        'Data Specialist': ['data', 'analytics', 'machine learning'],
-                        'Business Analyst': ['business', 'strategy', 'analysis']
-                    }.get(role, [])
-                    
-                    for user in available_users:
-                        if user['name'] in used_users:
-                            continue
-                        
-                        user_skills = [s.lower() for s in user.get('skills', [])]
-                        score = sum(1 for skill in role_skills if any(skill in us for us in user_skills))
-                        
-                        if score > best_score:
-                            best_score = score
-                            best_candidate = user
-                    
-                    if best_candidate:
-                        selected_team.append((best_candidate, role))
-                        used_users.add(best_candidate['name'])
-                
-                if selected_team:
-                    st.success("🎉 Smart team assembled successfully!")
-                    
-                    team_data = {
-                        'name': f"SmartTeam_{datetime.now().strftime('%H%M%S')}",
-                        'members': [member[0] for member in selected_team],
-                        'roles': {member[1]: member[0]['name'] for member in selected_team},
-                        'project_type': project_type,
-                        'description': project_description,
-                        'timeline': timeline,
-                        'collaboration_style': collaboration_style,
-                        'formation_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                    }
-                    
-                    save_quick_team(team_data)
-                    
-                    st.markdown("### 🏆 Your Smart Team:")
-                    
-                    for member, role in selected_team:
-                        display_profile_card(member, role=role)
-                    
-                    # Team compatibility analysis
-                    compatibility = calculate_team_compatibility([member[0] for member in selected_team])
-                    st.markdown(f"🔥 Team Compatibility: {compatibility:.0f}%")
-                    
-                    # Project roadmap suggestion
-                    st.markdown("### 🗺 Suggested Project Roadmap:")
-                    roadmap_phases = {
-                        "24 hours": ["Planning (2h)", "MVP Development (16h)", "Testing & Demo (6h)"],
-                        "48 hours": ["Planning & Design (6h)", "Core Development (30h)", "Integration & Testing (8h)", "Demo Prep (4h)"],
-                        "1 week": ["Week 1: Planning & Architecture", "Week 2-5: Development Sprints", "Week 6-7: Testing & Refinement"],
-                        "2-4 weeks": ["Phase 1: Research & Design", "Phase 2: Core Development", "Phase 3: Feature Enhancement", "Phase 4: Launch Prep"],
-                        "1+ month": ["Month 1: Foundation", "Month 2-3: Core Features", "Month 4+: Scale & Optimize"]
-                    }
-                    
-                    phases = roadmap_phases.get(timeline, ["Phase 1: Start", "Phase 2: Build", "Phase 3: Launch"])
-                    for i, phase in enumerate(phases, 1):
-                        st.markdown(f"{i}. **{phase}")
-
-def show_hackathon_ready_form():
-    """Hackathon-specific team formation"""
-    st.markdown("#### 🏆 Form teams optimized for hackathon success")
-    
-    # Mock hackathon data
-    active_hackathons = [
-        {"name": "AI Innovation Challenge", "deadline": "2 days", "theme": "AI/ML", "prizes": "$50K"},
-        {"name": "Web3 Builder Fest", "deadline": "5 days", "theme": "Blockchain", "prizes": "$25K"},
-        {"name": "Climate Tech Hack", "deadline": "1 week", "theme": "Sustainability", "prizes": "$30K"},
-        {"name": "FinTech Revolution", "deadline": "3 days", "theme": "Finance", "prizes": "$40K"}
-    ]
-    
-    with st.form("hackathon_ready_form"):
-        hackathon = st.selectbox("🏆 Target Hackathon", 
-                                [f"{h['name']} - {h['deadline']} left (Prize: {h['prizes']})" for h in active_hackathons])
-        
-        if hackathon:
-            selected_hackathon = active_hackathons[0]  # Default to first hackathon
-            
-            col1, col2 = st.columns(2)
-            with col1:
-                your_strength = st.selectbox("💪 Your Primary Strength",
-                                           ["Technical Development", "UI/UX Design", "Business Strategy", 
-                                            "Data Science", "Product Management", "Marketing"])
-                competition_level = st.selectbox("🎯 Competition Level",
-                                               ["Beginner Friendly", "Intermediate", "Advanced", "Expert Level"])
-            
-            with col2:
-                team_strategy = st.selectbox("📈 Team Strategy",
-                                           ["Speed & MVP", "Polish & Presentation", "Innovation Focus", 
-                                            "Technical Excellence", "Market Viability"])
-                preferred_role = st.selectbox("🎭 Preferred Role in Team",
-                                            ["Leader", "Core Developer", "Specialist", "Support", "Flexible"])
-        
-        hackathon_experience = st.text_area("🏆 Previous Hackathon Experience",
-                                          placeholder="Describe your hackathon experience and notable achievements...")
-        
-        form_team_button = st.form_submit_button("🏆 FORM HACKATHON TEAM!", use_container_width=True)
-        
-        if form_team_button and hackathon_experience:
-            with st.spinner("🏆 Assembling your winning hackathon team..."):
-                import time
-                time.sleep(2.5)
-                
-                users = get_all_users()
-                if len(users) >= 3:
-                    # Hackathon-optimized matching
-                    hackathon_team = random.sample(users, min(4, len(users)))
-                    
-                    # Create hackathon team data
-                    team_data = {
-                        'name': f"HackTeam_{selected_hackathon['name'].split()[0]}",
-                        'hackathon': selected_hackathon,
-                        'members': hackathon_team,
-                        'strategy': team_strategy,
-                        'competition_level': competition_level,
-                        'formation_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                        'deadline': selected_hackathon['deadline']
-                    }
-                    
-                    save_quick_team(team_data)
-                    
-                    st.success(f"🎉 Hackathon team formed for {selected_hackathon['name']}!")
-                    
-                    # Display team with hackathon focus
-                    st.markdown(f"""
-                    ### 🏆 Team: {team_data['name']}
-                    *🎯 Target:* {selected_hackathon['name']}  
-                    *⏰ Deadline:* {selected_hackathon['deadline']}  
-                    *💰 Prize Pool:* {selected_hackathon['prizes']}  
-                    *📈 Strategy:* {team_strategy}
-                    """)
-                    
-                    # Assign hackathon-specific roles
-                    hackathon_roles = ["Ideator & Presenter", "Lead Developer", "Designer & UX", "Integration & Demo"]
-                    for i, member in enumerate(hackathon_team):
-                        role = hackathon_roles[i % len(hackathon_roles)]
-                        display_profile_card(member, role=role)
-                    
-                    # Hackathon success tips
-                    st.markdown("""
-                    ### 🎯 Hackathon Success Tips:
-                    
-                    **⏰ Time Management:**
-                    - First 2 hours: Team bonding & detailed planning
-                    - 60% of time: Core development
-                    - 25% of time: Integration & testing
-                    - 15% of time: Demo preparation & presentation
-                    
-                    **🏆 Winning Strategy:**
-                    - Focus on solving a real problem
-                    - Keep MVP simple but polished
-                    - Prepare a compelling 3-minute demo
-                    - Practice your pitch multiple times
-                    """)
-                    
-                    # Quick actions for hackathon team
-                    col1, col2, col3 = st.columns(3)
-                    with col1:
-                        if st.button("📋 Create Sprint Board"):
-                            st.info("Sprint board created with hackathon timeline!")
-                    with col2:
-                        if st.button("💬 Team Discord"):
-                            st.info("Discord channel created for team communication!")
-                    with col3:
-                        if st.button("📊 Track Progress"):
-                            st.info("Progress tracker initialized!")
-
-def show_hackathons_page():
-    """Display active and upcoming hackathons"""
-    st.markdown("## 🏆 Active Hackathons & Competitions")
-    
-    # Mock hackathon data
-    hackathons = [
-        {
-            "name": "AI Innovation Challenge 2025",
-            "organizer": "TechCorp",
-            "theme": "Artificial Intelligence",
-            "deadline": datetime.now() + timedelta(days=2),
-            "prize_pool": "$50,000",
-            "participants": 1247,
-            "teams_needed": 8,
-            "difficulty": "Advanced",
-            "description": "Build innovative AI solutions that solve real-world problems"
-        },
-        {
-            "name": "Web3 Builder Fest",
-            "organizer": "Blockchain Foundation",
-            "theme": "Blockchain & DeFi",
-            "deadline": datetime.now() + timedelta(days=5),
-            "prize_pool": "$25,000",
-            "participants": 892,
-            "teams_needed": 12,
-            "difficulty": "Intermediate",
-            "description": "Create decentralized applications that reshape finance"
-        },
-        {
-            "name": "Climate Tech Hackathon",
-            "organizer": "Green Future",
-            "theme": "Sustainability",
-            "deadline": datetime.now() + timedelta(days=7),
-            "prize_pool": "$30,000",
-            "participants": 654,
-            "teams_needed": 15,
-            "difficulty": "Beginner Friendly",
-            "description": "Develop technology solutions for climate change"
-        }
-    ]
-    
-    # Display hackathon cards
-    for hackathon in hackathons:
-        days_left = (hackathon["deadline"] - datetime.now()).days
-        urgency_color = "🔴" if days_left <= 2 else "🟡" if days_left <= 5 else "🟢"
-        
-        with st.container():
-            st.markdown(f"""
-            <div class="team-card">
-                <h3>🏆 {hackathon['name']}</h3>
-                <p><strong>🏢 Organizer:</strong> {hackathon['organizer']}</p>
-                <p><strong>🎯 Theme:</strong> {hackathon['theme']}</p>
-                <p><strong>💰 Prize Pool:</strong> {hackathon['prize_pool']}</p>
-                <p><strong>{urgency_color} Deadline:</strong> {days_left} days left</p>
-                <p><strong>👥 Participants:</strong> {hackathon['participants']} | <strong>🔍 Teams Needed:</strong> {hackathon['teams_needed']}</p>
-                <p><strong>📈 Difficulty:</strong> {hackathon['difficulty']}</p>
-                <p><strong>📝 Description:</strong> {hackathon['description']}</p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                if st.button(f"⚡ Quick Team for {hackathon['name'][:10]}...", key=f"quick_{hackathon['name']}"):
-                    st.session_state['selected_hackathon'] = hackathon
-                    st.session_state['show_hackathon_team'] = True
-            
-            with col2:
-                if st.button(f"📋 View Details", key=f"details_{hackathon['name']}"):
-                    st.info(f"Opening {hackathon['name']} details...")
-            
-            with col3:
-                if st.button(f"👥 Join Existing Team", key=f"join_{hackathon['name']}"):
-                    st.info("Showing available teams for this hackathon...")
-        
-        st.markdown("---")
-
-def show_team_analytics_page():
-    """Advanced team analytics and insights"""
-    st.markdown("## 📊 Team Formation Analytics")
-    
-    users = get_all_users()
-    quick_teams = get_quick_teams()
-    
-    if not users or not quick_teams:
-        st.info("📈 Create some teams to see analytics!")
-        return
-    
-    # Key metrics dashboard
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        avg_team_size = sum(len(team.get('members', [])) for team in quick_teams) / len(quick_teams) if quick_teams else 0
-        st.metric("👥 Avg Team Size", f"{avg_team_size:.1f}")
-    
-    with col2:
-        avg_compatibility = sum(team.get('compatibility', 0) for team in quick_teams) / len(quick_teams) if quick_teams else 0
-        st.metric("🔥 Avg Compatibility", f"{avg_compatibility:.0f}%")
-    
-    with col3:
-        success_rate = 89  # Mock success rate
-        st.metric("🎯 Success Rate", f"{success_rate}%")
-    
-    with col4:
-        total_formations = len(quick_teams)
-        st.metric("⚡ Total Formations", total_formations)
-    
-    # Charts
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        # Team size distribution
-        team_sizes = [len(team.get('members', [])) for team in quick_teams]
-        if team_sizes:
-            size_counts = {size: team_sizes.count(size) for size in set(team_sizes)}
-            fig = px.bar(x=list(size_counts.keys()), y=list(size_counts.values()),
-                        title="📊 Team Size Distribution",
-                        labels={'x': 'Team Size', 'y': 'Number of Teams'})
-            st.plotly_chart(fig, use_container_width=True)
-    
-    with col2:
-        # Formation time analysis (mock data)
-        formation_times = ["< 1 min", "1-2 min", "2-5 min", "5+ min"]
-        time_counts = [15, 25, 8, 2]  # Mock data
-        
-        fig = px.pie(values=time_counts, names=formation_times,
-                    title="⏱ Team Formation Speed")
-        st.plotly_chart(fig, use_container_width=True)
-    
-    # Skills gap analysis
-    st.markdown("### 🎯 Skills Gap Analysis")
-    
-    all_skills = {}
-    for user in users:
-        for skill in user.get('skills', []):
-            all_skills[skill] = all_skills.get(skill, 0) + 1
-    
-    if all_skills:
-        # Find underrepresented skills
-        total_users = len(users)
-        skill_percentages = {skill: (count/total_users)*100 for skill, count in all_skills.items()}
-        
-        underrepresented = {skill: pct for skill, pct in skill_percentages.items() if pct < 20}
-        
-        if underrepresented:
-            st.markdown("#### 🔍 Skills in High Demand (< 20% coverage):")
-            for skill, percentage in sorted(underrepresented.items(), key=lambda x: x[1]):
-                st.markdown(f"- *{skill}*: {percentage:.1f}% of users")
-        
-        # Most common skills
-        common_skills = sorted(skill_percentages.items(), key=lambda x: x[1], reverse=True)[:10]
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown("#### 🏆 Most Common Skills:")
-            for skill, pct in common_skills[:5]:
-                st.markdown(f"- {skill}: {pct:.1f}%")
-        
-        with col2:
-            st.markdown("#### 📈 Trending Combinations:")
-            # Mock trending skill combinations
-            trending = ["Python + AI", "React + Node.js", "Figma + UI/UX", "Data Science + ML", "Blockchain + DeFi"]
-            for trend in trending:
-                st.markdown(f"- {trend}")
-
-def show_browse_users_page():
-    """Enhanced user browsing with team formation context"""
-    st.markdown("## 👥 Browse Hackers & Form Teams")
-    
-    users = get_all_users()
-    if not users:
-        st.info("📭 No users registered yet. Be the first!")
-        return
-    
-    # Enhanced filters
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        available_now = st.checkbox("⚡ Available Now", help="Show only users available for immediate team formation")
-    
-    with col2:
-        experience_filter = st.selectbox("📈 Min Experience", ["Any", "Beginner", "Intermediate", "Advanced", "Expert"])
-    
-    with col3:
-        all_domains = set()
-        for user in users:
-            all_domains.update(user.get('domain', []))
-        domain_filter = st.selectbox("🎯 Domain", ["Any"] + sorted(list(all_domains)))
-    
-    with col4:
-        team_role_filter = st.selectbox("🎭 Looking for Role", 
-                                      ["Any", "Team Lead", "Developer", "Designer", "Business", "Data Specialist"])
-    
-    # Apply filters
-    filtered_users = users.copy()
-    
-    if available_now:
-        filtered_users = [u for u in filtered_users if 'Flexible' in u.get('availability', [])]
-    
-    if experience_filter != "Any":
-        filtered_users = [u for u in filtered_users if u.get('experience_level') == experience_filter]
-    
-    if domain_filter != "Any":
-        filtered_users = [u for u in filtered_users if domain_filter in u.get('domain', [])]
-    
-    # User cards with team formation actions
-    st.markdown(f"### 👥 {len(filtered_users)} Hackers Found")
-    
-    for user in filtered_users:
-        col1, col2 = st.columns([3, 1])
-        
-        with col1:
-            display_profile_card(user)
-        
-        with col2:
-            st.markdown("<br>", unsafe_allow_html=True)
-            if st.button(f"⚡ Quick Team", key=f"qt_{user['name']}", help="Form instant team with this user"):
-                # Simulate quick team formation
-                matches = create_instant_team_match(user)
-                if matches:
-                    st.success(f"✅ Team formed with {user['name']}!")
-                    # You could store this team or show more details
-                else:
-                    st.warning("😅 No immediate matches found")
-            
-            if st.button(f"💬 Contact", key=f"contact_{user['name']}"):
-                st.info(f"📧 Contact request sent to {user['name']}")
-            
-            if st.button(f"🔍 Find Similar", key=f"similar_{user['name']}", help="Find users with similar skills"):
-                similar_users = []
-                user_skills = set(s.lower() for s in user.get('skills', []))
-                
-                for other_user in users:
-                    if other_user['name'] == user['name']:
-                        continue
-                    other_skills = set(s.lower() for s in other_user.get('skills', []))
-                    overlap = len(user_skills.intersection(other_skills))
-                    if overlap >= 2:  # At least 2 common skills
-                        similar_users.append((other_user, overlap))
-                
-                if similar_users:
-                    st.success(f"Found {len(similar_users)} similar users!")
-                else:
-                    st.info("No similar users found")
+                        st.warning("No compatible teammates found right now. Try adjusting your preferences!")
 
 def show_create_profile_page(categories):
     """Enhanced profile creation with team formation focus"""
@@ -1057,8 +1184,8 @@ def show_create_profile_page(categories):
             name = st.text_input("💬 Full Name *", placeholder="Your name")
             
             all_domains = []
-            for cat in categories:
-                all_domains.extend(categories[cat]["domains"].keys())
+            for cat in categories.values():
+                all_domains.extend(cat.get("domains", {}).keys())
             
             primary_domain = st.selectbox("🎯 Primary Domain *", [""] + all_domains)
             secondary_domain = st.selectbox("🎯 Secondary Domain", ["None"] + all_domains)
@@ -1156,12 +1283,11 @@ def show_create_profile_page(categories):
                                 col1, col2 = st.columns([3, 1])
                                 
                                 with col1:
-                                    display_profile_card(match_user, score=score/10)
+                                    display_profile_card_with_scores(match_user, categories, show_scores=True)
                                 
                                 with col2:
                                     st.markdown("<br><br>", unsafe_allow_html=True)
                                     if st.button(f"⚡ Team Up!", key=f"team_up_{i}"):
-                                        # Create instant team
                                         team_members = [profile, match_user]
                                         team_data = {
                                             'name': f"InstantTeam_{datetime.now().strftime('%H%M%S')}",
@@ -1180,35 +1306,57 @@ def show_instant_team_match():
     users = get_all_users()
     if len(users) < 2:
         st.warning("Need more users for instant matching!")
+        st.session_state['show_instant_match'] = False
         return
     
     user_name = st.selectbox("Select your profile:", [user['name'] for user in users])
     
-    if st.button("🔍 Find Instant Match"):
-        user_profile = next((u for u in users if u['name'] == user_name), None)
-        if user_profile:
-            matches = create_instant_team_match(user_profile)
-            
-            if matches:
-                st.success("⚡ Instant match found!")
-                best_match = matches[0]
-                display_profile_card(best_match[0], score=best_match[1]/10)
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("🔍 Find Instant Match"):
+            user_profile = next((u for u in users if u['name'] == user_name), None)
+            if user_profile:
+                matches = create_instant_team_match(user_profile)
                 
-                if st.button("🤝 Form Team Now!"):
-                    team_data = {
-                        'name': f"InstantMatch_{datetime.now().strftime('%H%M%S')}",
-                        'members': [user_profile, best_match[0]],
-                        'formation_time': datetime.now().strftime('%H:%M:%S'),
-                        'type': 'instant_match'
-                    }
-                    save_quick_team(team_data)
-                    st.success("🎉 Team formed successfully!")
-            else:
-                st.info("No instant matches available right now.")
+                if matches:
+                    st.success("⚡ Instant match found!")
+                    best_match = matches[0]
+                    categories = load_json(CATEGORIES_FILE)
+                    display_profile_card_with_scores(best_match[0], categories, show_scores=True)
+                    
+                    if st.button("🤝 Form Team Now!"):
+                        team_data = {
+                            'name': f"InstantMatch_{datetime.now().strftime('%H%M%S')}",
+                            'members': [user_profile, best_match[0]],
+                            'formation_time': datetime.now().strftime('%H:%M:%S'),
+                            'type': 'instant_match'
+                        }
+                        save_quick_team(team_data)
+                        st.success("🎉 Team formed successfully!")
+                        st.session_state['show_instant_match'] = False
+                else:
+                    st.info("No instant matches available right now.")
+    
+    with col2:
+        if st.button("❌ Close"):
+            st.session_state['show_instant_match'] = False
+            st.rerun()
 
 def show_find_teams_page():
-    """Enhanced team finding with CYHI quick team focus"""
+    """Enhanced team finding page with create team option"""
     st.markdown("## 🔍 Find & Join Teams")
+    
+    # Add create team button at the top
+    if st.button("🚀 Create New Team", key="create_team_btn"):
+        st.session_state['show_create_team'] = True
+    
+    # Show create team form if triggered
+    if st.session_state.get('show_create_team', False):
+        show_create_team_form()
+        if st.button("← Back to Teams List"):
+            st.session_state['show_create_team'] = False
+            st.rerun()
+        return
     
     teams = get_all_teams()
     quick_teams = get_quick_teams()
@@ -1240,7 +1388,6 @@ def show_find_teams_page():
         members = team.get('members', [])
         target_size = team.get('target_size', len(members))
         
-        # Team card
         with st.container():
             st.markdown(f"""
             <div class="team-card">
@@ -1255,7 +1402,7 @@ def show_find_teams_page():
             # Show team members
             if members:
                 st.markdown("*Team Members:*")
-                for member in members[:3]:  # Show first 3 members
+                for member in members[:3]:
                     st.markdown(f"- 👤 {member.get('name', 'Unknown')} ({', '.join(member.get('skills', [])[:3])})")
                 
                 if len(members) > 3:
@@ -1266,7 +1413,21 @@ def show_find_teams_page():
                 col1, col2, col3 = st.columns(3)
                 with col1:
                     if st.button(f"🤝 Request to Join", key=f"join_{team_name}"):
-                        st.success(f"✅ Join request sent to {team_name}!")
+                        # For demo, using first user as current user
+                        users = get_all_users()
+                        if users:
+                            current_user = users[0]['name']
+                            request_data = {
+                                'team_id': team.get('id', 'unknown'),
+                                'team_name': team_name,
+                                'from_user': current_user,
+                                'to_user': "Team Owner",  # In a real app, this would be the team creator
+                                'status': 'pending',
+                                'message': f"{current_user} wants to join your team {team_name}",
+                                'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                            }
+                            save_team_request(request_data)
+                            st.success(f"✅ Join request sent to {team_name}!")
                 
                 with col2:
                     if st.button(f"💬 Contact Team", key=f"contact_team_{team_name}"):
@@ -1274,15 +1435,112 @@ def show_find_teams_page():
                 
                 with col3:
                     if st.button(f"🔍 View Details", key=f"details_team_{team_name}"):
-                        st.info("Opening team details...")
+                        st.session_state['selected_team'] = team
+                        st.rerun()
             else:
                 st.info("🔒 Team is full")
         
         st.markdown("---")
+    
+    # Show team details if a team is selected
+    if st.session_state.get('selected_team'):
+        team = st.session_state['selected_team']
+        st.markdown(f"## 🚀 Team Details: {team.get('name')}")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("### 👥 Team Members")
+            for member in team.get('members', []):
+                st.markdown(f"- **{member.get('name')}** - {member.get('experience_level', 'Unknown')}")
+                st.markdown(f"  Skills: {', '.join(member.get('skills', [])[:5])}")
+        
+        with col2:
+            st.markdown("### 📋 Team Info")
+            st.markdown(f"**Focus Area:** {team.get('focus_area', 'Not specified')}")
+            st.markdown(f"**Project Type:** {team.get('project_type', 'Not specified')}")
+            st.markdown(f"**Target Size:** {len(team.get('members', []))} / {team.get('target_size', 'Unknown')}")
+            st.markdown(f"**Compatibility Score:** {team.get('compatibility', 0):.0f}%")
+            st.markdown(f"**Formed On:** {team.get('created_date', 'Unknown')}")
+        
+        if st.button("← Back to Teams List"):
+            st.session_state['selected_team'] = None
+            st.rerun()
 
-# Sample data creation functions
+def show_team_analytics_page():
+    """Simplified team analytics dashboard"""
+    st.markdown("## 📊 Team Formation Analytics")
+    
+    users = get_all_users()
+    quick_teams = get_quick_teams()
+    teams = get_all_teams()
+    all_teams = quick_teams + teams
+    
+    if not users or not all_teams:
+        st.info("📈 Create some teams to see analytics!")
+        return
+    
+    # Key metrics dashboard
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        total_teams = len(all_teams)
+        st.metric("👥 Total Teams", total_teams)
+    
+    with col2:
+        avg_team_size = sum(len(team.get('members', [])) for team in all_teams) / len(all_teams) if all_teams else 0
+        st.metric("📊 Avg Team Size", f"{avg_team_size:.1f}")
+    
+    with col3:
+        avg_compatibility = sum(team.get('compatibility', 0) for team in all_teams) / len(all_teams) if all_teams else 0
+        st.metric("🔥 Avg Compatibility", f"{avg_compatibility:.0f}%")
+    
+    with col4:
+        success_rate = 89
+        st.metric("🎯 Success Rate", f"{success_rate}%")
+    
+    # Simple charts
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        # Team size distribution
+        team_sizes = [len(team.get('members', [])) for team in all_teams]
+        if team_sizes:
+            size_counts = {size: team_sizes.count(size) for size in set(team_sizes)}
+            fig = px.bar(x=list(size_counts.keys()), y=list(size_counts.values()),
+                        title="📊 Team Size Distribution",
+                        labels={'x': 'Team Size', 'y': 'Number of Teams'})
+            st.plotly_chart(fig, use_container_width=True)
+    
+    with col2:
+        # Team types
+        quick_count = len(quick_teams)
+        regular_count = len(teams)
+        fig = px.pie(values=[quick_count, regular_count], 
+                    names=['Quick Teams', 'Regular Teams'],
+                    title="⚡ Team Formation Types")
+        st.plotly_chart(fig, use_container_width=True)
+    
+    # Top skills analysis
+    st.markdown("### 🎯 Top Skills in Teams")
+    
+    all_skills = {}
+    for team in all_teams:
+        for member in team.get('members', []):
+            for skill in member.get('skills', []):
+                all_skills[skill] = all_skills.get(skill, 0) + 1
+    
+    if all_skills:
+        # Get top 10 skills
+        top_skills = sorted(all_skills.items(), key=lambda x: x[1], reverse=True)[:10]
+        
+        skills_df = pd.DataFrame(top_skills, columns=['Skill', 'Count'])
+        fig = px.bar(skills_df, x='Count', y='Skill', orientation='h',
+                    title="🏆 Most Common Skills in Teams")
+        st.plotly_chart(fig, use_container_width=True)
+
 def create_sample_categories():
-    """Create sample categories for CYHI"""
+    """Create sample categories"""
     sample_categories = {
         "Technology": {
             "domains": {
@@ -1334,7 +1592,7 @@ def create_sample_users():
             "domain": ["AI/ML", "Web Development"],
             "experience_level": "Advanced",
             "availability": ["Evenings", "Weekends", "Flexible"],
-            "bio": "AI enthusiast with 4+ years of experience building ML models and web applications. Love hackathons and collaborative coding!",
+            "bio": "AI enthusiast with 4+ years of experience building ML models and web applications.",
             "hackathon_experience": "6-10 Hackathons",
             "preferred_team_size": 4,
             "leadership_interest": "Can Lead if Needed",
@@ -1348,7 +1606,7 @@ def create_sample_users():
             "domain": ["Web Development", "UI/UX Design"],
             "experience_level": "Intermediate",
             "availability": ["Right Now", "Flexible", "Remote Only"],
-            "bio": "Full-stack developer with a passion for creating beautiful, user-friendly interfaces. Always excited about new challenges!",
+            "bio": "Full-stack developer with a passion for creating beautiful interfaces.",
             "hackathon_experience": "3-5 Hackathons",
             "preferred_team_size": 3,
             "leadership_interest": "Prefer to Follow",
@@ -1362,7 +1620,7 @@ def create_sample_users():
             "domain": ["Blockchain"],
             "experience_level": "Expert",
             "availability": ["Weekends", "Evenings"],
-            "bio": "Blockchain architect with deep expertise in DeFi protocols. Founded 2 crypto startups and love building the future of finance.",
+            "bio": "Blockchain architect with deep expertise in DeFi protocols.",
             "hackathon_experience": "Veteran (10+)",
             "preferred_team_size": 4,
             "leadership_interest": "Love to Lead",
@@ -1376,7 +1634,7 @@ def create_sample_users():
             "domain": ["Product Management"],
             "experience_level": "Advanced",
             "availability": ["Flexible", "Full-time"],
-            "bio": "Product manager with 5+ years experience launching successful tech products. Great at turning ideas into actionable plans.",
+            "bio": "Product manager with 5+ years experience launching successful tech products.",
             "hackathon_experience": "3-5 Hackathons",
             "preferred_team_size": 5,
             "leadership_interest": "Natural Leader",
@@ -1390,7 +1648,7 @@ def create_sample_users():
             "domain": ["Game Development"],
             "experience_level": "Intermediate",
             "availability": ["Weekends", "Evenings"],
-            "bio": "Indie game developer passionate about creating immersive experiences. Published 3 mobile games and love collaborative projects.",
+            "bio": "Indie game developer passionate about creating immersive experiences.",
             "hackathon_experience": "1-2 Hackathons",
             "preferred_team_size": 3,
             "leadership_interest": "Can Lead if Needed",
@@ -1409,152 +1667,13 @@ def initialize_sample_data():
     """Initialize sample data if no data exists"""
     if not os.path.exists(USERS_FILE) or not get_all_users():
         create_sample_users()
-        st.info("Sample users created for demonstration!")
     
     if not os.path.exists(CATEGORIES_FILE) or not load_json(CATEGORIES_FILE):
         create_sample_categories()
-
-# Enhanced sidebar with CYHI features
-def enhanced_sidebar():
-    """Enhanced sidebar with CYHI quick team features"""
-    st.sidebar.markdown("---")
-    
-    # Quick team status
-    st.sidebar.markdown("### Quick Team Status")
-    users = get_all_users()
-    quick_teams = get_quick_teams()
-    
-    available_users = len([u for u in users if "Right Now" in u.get('availability', []) or "Flexible" in u.get('availability', [])])
-    st.sidebar.metric("Available Now", available_users)
-    st.sidebar.metric("Quick Teams Today", len(quick_teams))
-    
-    # Formation speed indicator
-    if quick_teams:
-        avg_time = "< 2 min"  # Mock calculation
-        st.sidebar.metric("Avg Formation Time", avg_time)
-    
-    st.sidebar.markdown("---")
-    
-    # Quick actions
-    st.sidebar.markdown("### Quick Actions")
-    
-    if st.sidebar.button("Smart Match Me", help="Find best teammates using AI"):
-        st.session_state['show_smart_match'] = True
-    
-    if st.sidebar.button("Join Urgent Team", help="Join teams that need members ASAP"):
-        st.session_state['show_urgent_teams'] = True
-    
-    if st.sidebar.button("My Team Stats", help="View your team formation history"):
-        st.session_state['show_my_stats']= True
-
-    st.sidebar.markdown("---")
-    
-    # Current hackathons sidebar
-    st.sidebar.markdown("### Live Hackathons")
-    hackathons = [
-        {"name": "AI Challenge", "deadline": "2 days"},
-        {"name": "Web3 Fest", "deadline": "5 days"},
-        {"name": "Climate Tech", "deadline": "1 week"}
-    ]
-    
-    for hackathon in hackathons:
-        st.sidebar.markdown(f"*{hackathon['name']}*")
-        st.sidebar.markdown(f"{hackathon['deadline']} left")
-        if st.sidebar.button(f"Quick Team", key=f"sidebar_{hackathon['name']}"):
-            st.session_state['selected_hackathon'] = hackathon
-    
-    st.sidebar.markdown("---")
-    
-    # Tips section
-    with st.sidebar.expander("Quick Team Tips"):
-        st.markdown("""
-        **Fast Formation Tips:**
-        - Keep availability updated
-        - List complementary skills
-        - Be open to new ideas
-        - Communicate quickly
-        
-        **Better Matches:**
-        - Complete your bio
-        - Specify experience level
-        - Set realistic team size
-        - Join multiple domains
-        """)
-
-def show_notification_center():
-    """Show notifications for team invites, matches, etc."""
-    if st.session_state.get('show_notifications'):
-        st.sidebar.markdown("### Notifications")
-        
-        # Mock notifications
-        notifications = [
-            {"type": "team_invite", "message": "Alex Chen invited you to AI Dream Team", "time": "2 min ago"},
-            {"type": "match_found", "message": "New perfect match found!", "time": "5 min ago"},
-            {"type": "hackathon", "message": "AI Challenge deadline in 2 days", "time": "1 hour ago"}
-        ]
-        
-        for notif in notifications:
-            icon = {"team_invite": "handshake", "match_found": "target", "hackathon": "trophy"}.get(notif["type"], "bell")
-            st.sidebar.markdown(f"{icon} {notif['message']}")
-            st.sidebar.caption(notif["time"])
-
-# Performance tracking
-def track_team_formation_metrics():
-    """Track metrics for team formation success"""
-    quick_teams = get_quick_teams()
-    
-    metrics = {
-        "total_formations": len(quick_teams),
-        "avg_formation_time": 95,  # seconds - mock data
-        "success_rate": 92,  # percentage - mock data
-        "user_satisfaction": 4.6,  # out of 5 - mock data
-        "most_common_team_size": 3,
-        "peak_formation_hours": ["19:00-21:00", "10:00-12:00"]  # mock data
-    }
-    
-    return metrics
-
-# Real-time team matching simulation
-def simulate_real_time_matching():
-    """Simulate real-time matching notifications"""
-    if st.session_state.get('real_time_matching', False):
-        # This would integrate with real WebSocket connections in production
-        import time
-        import random
-        
-        placeholder = st.empty()
-        
-        for i in range(3):
-            time.sleep(2)
-            placeholder.info(f"Searching for teammates... {i+1}/3")
-        
-        time.sleep(1)
-        placeholder.success("Perfect match found! Creating team...")
 
 if __name__ == "__main__":
     # Initialize sample data
     initialize_sample_data()
     
-    # Enhanced sidebar
-    enhanced_sidebar()
-    
-    # Show notifications
-    show_notification_center()
-    
     # Main app
     main()
-    
-    # Handle session state for various popups/modals
-    if st.session_state.get('show_smart_match'):
-        st.session_state['show_smart_match'] = False
-        st.rerun()
-    
-    if st.session_state.get('show_urgent_teams'):
-        st.session_state['show_urgent_teams'] = False
-        st.rerun()
-    
-    # Real-time matching simulation (for demo purposes)
-    if st.session_state.get('start_real_time_matching'):
-        simulate_real_time_matching()
-        st.session_state['start_real_time_matching'] = False
-                        
