@@ -2,8 +2,8 @@
 HackMate - CYHI Quick Teams ⚡
 A powerful Streamlit application designed to help hackers form optimal teams quickly for hackathons using AI-powered matching algorithms.
 
-Live Demo
-🚀 Try it now: HackMate Live on Hugging Face Spaces
+#Live Demo
+🚀 Try it now: HackMate Live on Hugging Face Spaces:https://huggingface.co/spaces/Dev9893/encoder
 
 Features
 ⚡ Instant Team Matching: Form teams in under 2 minutes with AI-powered matching
