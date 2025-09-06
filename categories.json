@@ -1,0 +1,65 @@
+{
+  "Hackathon": {
+    "domains": {
+      "Web Development": ["html", "css", "javascript", "react", "angular", "node.js", "django"],
+      "Game Development": ["unity", "unreal engine", "c#", "c++", "gamedev"],
+      "Machine Learning": ["tensorflow", "pytorch", "scikit-learn", "python", "keras", "ml"],
+      "Mobile Development": ["android", "ios", "swift", "kotlin", "react native", "flutter"],
+      "IoT": ["arduino", "raspberry pi", "mqtt", "c++", "python"],
+      "Blockchain": ["solidity", "ethereum", "hyperledger", "blockchain", "rust"],
+      "Cybersecurity": ["wireshark", "metasploit", "python", "pentesting", "security"]
+    }
+  },
+  "Study Group": {
+    "domains": {
+      "Computer Science & Engineering": [
+        "data structures", "algorithms", "operating systems", "database systems",
+        "computer networks", "software engineering", "programming", "theory of computation"
+      ],
+      "Electronics & Communication Engineering": [
+        "analog electronics", "digital electronics", "signal processing", "communication systems",
+        "microprocessors", "embedded systems", "control systems", "vlsi design"
+      ],
+      "Mechanical Engineering": [
+        "thermodynamics", "fluid mechanics", "mechanics of materials",
+        "machine design", "manufacturing processes", "heat transfer", "engineering drawing"
+      ],
+      "Mathematics": [
+        "calculus", "linear algebra", "probability", "statistics", "discrete mathematics", "numerical methods"
+      ],
+      "Physics": [
+        "mechanics", "electromagnetism", "optics", "quantum physics", "thermodynamics", "modern physics"
+      ],
+      "Humanities and Social Sciences": [
+        "economics", "psychology", "philosophy", "communication skills", "technical writing"
+      ]
+    }
+  },
+  "Online Gaming": {
+    "domains": {
+      "FPS": ["aiming", "strategy", "teamwork", "communication"],
+      "MOBA": ["map awareness", "hero control", "teamplay", "positioning"],
+      "RPG": ["character build", "questing", "combat", "storytelling"],
+      "Strategy": ["resource management", "tactics", "planning", "multitasking"]
+    }
+  },
+  "Clubs": {
+    "domains": {
+      "Dance Club": ["dance", "choreography", "performance", "classical", "western", "freestyle"],
+      "Arts & Craft Club": ["painting", "drawing", "sculpture", "crafts", "digital art", "design"],
+      "Dramatics Society": ["acting", "stage management", "script writing", "audio", "lighting", "props"],
+      "Music Club": ["instrument", "vocal", "composing", "practice", "performance", "theory"],
+      "Literature & Quizzing Society": ["literature", "quizzing", "debate", "writing", "critical thinking"],
+      "Automotive & Fabrication Club": ["fabrication", "automotive design", "3d printing", "model making", "engineering"],
+      "Aero Fabrication Club": ["aerospace", "drone design", "rc planes", "3d printing", "flight dynamics"],
+      "Athletics Club": ["running", "track", "field events", "strength", "endurance"],
+      "Badminton Club": ["badminton", "training", "tournaments", "skills", "teamwork"],
+      "Basketball Club": ["basketball", "team play", "training", "dribbling", "shooting"],
+      "Chess & Carom Club": ["chess", "strategy", "practice", "carom", "competition"],
+      "Cricket Club": ["cricket", "batting", "bowling", "fielding", "matches"],
+      "Football Club": ["football", "teamwork", "skill", "training", "matches"],
+      "Lawn Tennis Club": ["tennis", "training", "skills", "matches"],
+      "Business and Management Club": ["entrepreneurship", "business strategies", "management", "networking", "events"]
+    }
+  }
+}

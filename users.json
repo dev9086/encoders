@@ -1,0 +1,356 @@
+{
+    "dev ": {
+        "name": "dev ",
+        "skills": [
+            "html",
+            "css"
+        ],
+        "availability": [
+            "Remote Only",
+            "Evenings"
+        ],
+        "domain": [
+            "Web Development"
+        ],
+        "bio": "i have done phd in computer science",
+        "experience_level": "Beginner",
+        "location": "goa",
+        "portfolio_url": "",
+        "contact_methods": [
+            "Phone"
+        ],
+        "created_date": "2025-09-06 03:16:37",
+        "bio_score": 9
+    },
+    "dev": {
+        "name": "dev",
+        "skills": [
+            "python",
+            "streamlit"
+        ],
+        "availability": [
+            "Evenings",
+            "Part-time"
+        ],
+        "domain": [
+            "Web Development",
+            "Game Development"
+        ],
+        "experience_level": "Beginner",
+        "bio": "i am interested in data analytics and making ml model.",
+        "hackathon_experience": "First Timer",
+        "preferred_team_size": 3,
+        "leadership_interest": "Love to Lead",
+        "collaboration_style": "Hybrid",
+        "communication_pref": "Flexible",
+        "project_interest": [
+            "AI/ML"
+        ],
+        "quick_team_opt_in": true,
+        "created_date": "2025-09-06 04:55:04",
+        "last_active": "2025-09-06 04:55:04"
+    },
+    "alex_chen": {
+        "name": "Alex Chen",
+        "skills": [
+            "python",
+            "tensorflow",
+            "pytorch",
+            "machine learning",
+            "data analysis"
+        ],
+        "availability": [
+            "Weekends",
+            "Evenings",
+            "Flexible"
+        ],
+        "domain": [
+            "Machine Learning",
+            "Data Science"
+        ],
+        "experience_level": "Advanced",
+        "bio": "AI enthusiast with 3+ years of experience in machine learning and data analysis. Love working on challenging problems.",
+        "hackathon_experience": "3-5 Hackathons",
+        "preferred_team_size": 4,
+        "leadership_interest": "Can Lead if Needed",
+        "collaboration_style": "Remote First",
+        "communication_pref": "Slack/Discord",
+        "project_interest": [
+            "AI/ML",
+            "Data Science",
+            "Web Apps"
+        ],
+        "quick_team_opt_in": true,
+        "created_date": "2025-09-05 10:30:15",
+        "last_active": "2025-09-06 09:45:22"
+    },
+    "maya_patel": {
+        "name": "Maya Patel",
+        "skills": [
+            "react",
+            "javascript",
+            "html",
+            "css",
+            "ui/ux design",
+            "figma"
+        ],
+        "availability": [
+            "Right Now",
+            "Flexible",
+            "Remote Only"
+        ],
+        "domain": [
+            "Web Development",
+            "UI/UX Design"
+        ],
+        "experience_level": "Intermediate",
+        "bio": "Frontend developer with a passion for creating beautiful and user-friendly interfaces. Strong design sensibilities.",
+        "hackathon_experience": "1-2 Hackathons",
+        "preferred_team_size": 3,
+        "leadership_interest": "Prefer to Follow",
+        "collaboration_style": "Remote First",
+        "communication_pref": "Video Calls",
+        "project_interest": [
+            "Web Apps",
+            "Mobile Apps",
+            "Social Impact"
+        ],
+        "quick_team_opt_in": true,
+        "created_date": "2025-09-04 14:20:33",
+        "last_active": "2025-09-06 11:30:45"
+    },
+    "jordan_kim": {
+        "name": "Jordan Kim",
+        "skills": [
+            "solidity",
+            "blockchain",
+            "ethereum",
+            "smart contracts",
+            "web3"
+        ],
+        "availability": [
+            "Weekends",
+            "Full-time"
+        ],
+        "domain": [
+            "Blockchain",
+            "Web Development"
+        ],
+        "experience_level": "Expert",
+        "bio": "Blockchain developer with expertise in DeFi protocols and smart contract development. Built several dApps.",
+        "hackathon_experience": "6-10 Hackathons",
+        "preferred_team_size": 4,
+        "leadership_interest": "Love to Lead",
+        "collaboration_style": "Hybrid",
+        "communication_pref": "Slack/Discord",
+        "project_interest": [
+            "Blockchain",
+            "Fintech",
+            "Web3"
+        ],
+        "quick_team_opt_in": true,
+        "created_date": "2025-09-03 16:45:12",
+        "last_active": "2025-09-06 08:15:30"
+    },
+    "sarah_williams": {
+        "name": "Sarah Williams",
+        "skills": [
+            "java",
+            "spring boot",
+            "microservices",
+            "api development",
+            "docker"
+        ],
+        "availability": [
+            "Evenings",
+            "Part-time",
+            "Weekends"
+        ],
+        "domain": [
+            "Web Development",
+            "Backend Development"
+        ],
+        "experience_level": "Intermediate",
+        "bio": "Backend developer specializing in Java and microservices architecture. Enjoy solving complex technical challenges.",
+        "hackathon_experience": "3-5 Hackathons",
+        "preferred_team_size": 4,
+        "leadership_interest": "Can Lead if Needed",
+        "collaboration_style": "Remote First",
+        "communication_pref": "Flexible",
+        "project_interest": [
+            "Web Apps",
+            "API Development",
+            "Microservices"
+        ],
+        "quick_team_opt_in": true,
+        "created_date": "2025-09-02 09:15:28",
+        "last_active": "2025-09-06 10:20:15"
+    },
+    "david_rodriguez": {
+        "name": "David Rodriguez",
+        "skills": [
+            "react native",
+            "flutter",
+            "mobile development",
+            "ios",
+            "android"
+        ],
+        "availability": [
+            "Flexible",
+            "Remote Only",
+            "Part-time"
+        ],
+        "domain": [
+            "Mobile Development"
+        ],
+        "experience_level": "Advanced",
+        "bio": "Mobile app developer with experience in both iOS and Android platforms. Passionate about creating smooth user experiences.",
+        "hackathon_experience": "6-10 Hackathons",
+        "preferred_team_size": 3,
+        "leadership_interest": "Natural Leader",
+        "collaboration_style": "Remote First",
+        "communication_pref": "Slack/Discord",
+        "project_interest": [
+            "Mobile Apps",
+            "UI/UX Design",
+            "Social Impact"
+        ],
+        "quick_team_opt_in": true,
+        "created_date": "2025-09-01 11:30:45",
+        "last_active": "2025-09-06 14:25:33"
+    },
+    "lisa_chen": {
+        "name": "Lisa Chen",
+        "skills": [
+            "data analysis",
+            "sql",
+            "python",
+            "tableau",
+            "power bi"
+        ],
+        "availability": [
+            "Weekends",
+            "Evenings",
+            "Flexible"
+        ],
+        "domain": [
+            "Data Science",
+            "Business Intelligence"
+        ],
+        "experience_level": "Intermediate",
+        "bio": "Data analyst with strong skills in SQL and data visualization. Enjoy turning raw data into actionable insights.",
+        "hackathon_experience": "1-2 Hackathons",
+        "preferred_team_size": 4,
+        "leadership_interest": "Prefer to Follow",
+        "collaboration_style": "Hybrid",
+        "communication_pref": "Video Calls",
+        "project_interest": [
+            "Data Science",
+            "Business Intelligence",
+            "Analytics"
+        ],
+        "quick_team_opt_in": true,
+        "created_date": "2025-08-31 13:45:22",
+        "last_active": "2025-09-06 16:30:11"
+    },
+    "michael_brown": {
+        "name": "Michael Brown",
+        "skills": [
+            "unity",
+            "c#",
+            "game development",
+            "3d modeling",
+            "vr/ar"
+        ],
+        "availability": [
+            "Right Now",
+            "Full-time",
+            "Weekends"
+        ],
+        "domain": [
+            "Game Development"
+        ],
+        "experience_level": "Advanced",
+        "bio": "Game developer with experience in Unity and Unreal Engine. Passionate about creating immersive gaming experiences.",
+        "hackathon_experience": "3-5 Hackathons",
+        "preferred_team_size": 4,
+        "leadership_interest": "Love to Lead",
+        "collaboration_style": "In-Person Preferred",
+        "communication_pref": "Slack/Discord",
+        "project_interest": [
+            "Games",
+            "VR/AR",
+            "3D Modeling"
+        ],
+        "quick_team_opt_in": true,
+        "created_date": "2025-08-30 15:20:33",
+        "last_active": "2025-09-06 12:15:44"
+    },
+    "priya_sharma": {
+        "name": "Priya Sharma",
+        "skills": [
+            "cybersecurity",
+            "python",
+            "network security",
+            "ethical hacking",
+            "penetration testing"
+        ],
+        "availability": [
+            "Evenings",
+            "Part-time",
+            "Remote Only"
+        ],
+        "domain": [
+            "Cybersecurity"
+        ],
+        "experience_level": "Expert",
+        "bio": "Cybersecurity specialist with certifications in ethical hacking and penetration testing. Focused on securing digital assets.",
+        "hackathon_experience": "6-10 Hackathons",
+        "preferred_team_size": 3,
+        "leadership_interest": "Can Lead if Needed",
+        "collaboration_style": "Remote First",
+        "communication_pref": "Slack/Discord",
+        "project_interest": [
+            "Cybersecurity",
+            "Network Security",
+            "Ethical Hacking"
+        ],
+        "quick_team_opt_in": true,
+        "created_date": "2025-08-29 17:35:28",
+        "last_active": "2025-09-06 15:40:22"
+    },
+    "ryan_taylor": {
+        "name": "Ryan Taylor",
+        "skills": [
+            "iot",
+            "arduino",
+            "raspberry pi",
+            "embedded systems",
+            "python"
+        ],
+        "availability": [
+            "Weekends",
+            "Flexible",
+            "Remote Only"
+        ],
+        "domain": [
+            "IoT",
+            "Embedded Systems"
+        ],
+        "experience_level": "Intermediate",
+        "bio": "IoT enthusiast with hands-on experience in building smart devices and embedded systems. Love working on hardware projects.",
+        "hackathon_experience": "1-2 Hackathons",
+        "preferred_team_size": 4,
+        "leadership_interest": "Prefer to Follow",
+        "collaboration_style": "Hybrid",
+        "communication_pref": "Flexible",
+        "project_interest": [
+            "IoT",
+            "Hardware",
+            "Embedded Systems"
+        ],
+        "quick_team_opt_in": true,
+        "created_date": "2025-08-28 19:50:15",
+        "last_active": "2025-09-06 13:25:33"
+    }
+}

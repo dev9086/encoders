@@ -1,0 +1,246 @@
+{
+    "quick_1_20250906065143": {
+        "name": "QuickTeam_065143",
+        "members": [
+            {
+                "name": "dev ",
+                "skills": [
+                    "html",
+                    "css"
+                ],
+                "availability": [
+                    "Remote Only",
+                    "Evenings"
+                ],
+                "domain": [
+                    "Web Development"
+                ],
+                "bio": "i have done phd in computer science",
+                "experience_level": "Beginner",
+                "location": "goa",
+                "portfolio_url": "",
+                "contact_methods": [
+                    "Phone"
+                ],
+                "created_date": "2025-09-06 03:16:37",
+                "bio_score": 9
+            },
+            {
+                "name": "dev",
+                "skills": [
+                    "python",
+                    "streamlit"
+                ],
+                "availability": [
+                    "Evenings",
+                    "Part-time"
+                ],
+                "domain": [
+                    "Web Development",
+                    "Game Development"
+                ],
+                "experience_level": "Beginner",
+                "bio": "i am interested in data analytics and making ml model.",
+                "hackathon_experience": "First Timer",
+                "preferred_team_size": 3,
+                "leadership_interest": "Love to Lead",
+                "collaboration_style": "Hybrid",
+                "communication_pref": "Flexible",
+                "project_interest": [
+                    "AI/ML"
+                ],
+                "quick_team_opt_in": true,
+                "created_date": "2025-09-06 04:55:04",
+                "last_active": "2025-09-06 04:55:04"
+            }
+        ],
+        "goal": "i want to build a nltk model which clasify sentiments",
+        "focus_area": "Web Development",
+        "urgency": "normal",
+        "target_size": 3,
+        "formation_time": "06:51:43",
+        "compatibility": 66.00000000000001,
+        "roles": {
+            "Team Lead": {
+                "skills": [
+                    "leadership",
+                    "project management",
+                    "communication"
+                ],
+                "assigned": "dev ",
+                "score": 0.5
+            },
+            "Tech Lead": {
+                "skills": [
+                    "programming",
+                    "software development",
+                    "architecture"
+                ],
+                "assigned": "dev ",
+                "score": 0.5
+            },
+            "Designer": {
+                "skills": [
+                    "ui/ux",
+                    "design",
+                    "figma",
+                    "adobe",
+                    "graphics"
+                ],
+                "assigned": "dev ",
+                "score": 0.5
+            },
+            "Backend Dev": {
+                "skills": [
+                    "python",
+                    "java",
+                    "node.js",
+                    "database",
+                    "api"
+                ],
+                "assigned": "dev",
+                "score": 1.5
+            },
+            "Frontend Dev": {
+                "skills": [
+                    "react",
+                    "javascript",
+                    "html",
+                    "css",
+                    "vue"
+                ],
+                "assigned": "dev ",
+                "score": 2.5
+            },
+            "Data Specialist": {
+                "skills": [
+                    "data science",
+                    "machine learning",
+                    "analytics",
+                    "sql"
+                ],
+                "assigned": "dev ",
+                "score": 0.5
+            },
+            "Business Analyst": {
+                "skills": [
+                    "business",
+                    "strategy",
+                    "marketing",
+                    "finance"
+                ],
+                "assigned": "dev ",
+                "score": 0.5
+            }
+        },
+        "time_commitment": "2-4 hours"
+    },
+    "quick_2_20250906111245": {
+        "name": "QuickTeam_111245",
+        "members": [
+            {
+                "name": "Jordan Kim",
+                "skills": [
+                    "solidity",
+                    "blockchain",
+                    "ethereum",
+                    "smart contracts",
+                    "web3"
+                ],
+                "availability": [
+                    "Weekends",
+                    "Full-time"
+                ],
+                "domain": [
+                    "Blockchain",
+                    "Web Development"
+                ],
+                "experience_level": "Expert",
+                "bio": "Blockchain developer with expertise in DeFi protocols and smart contract development. Built several dApps.",
+                "hackathon_experience": "6-10 Hackathons",
+                "preferred_team_size": 4,
+                "leadership_interest": "Love to Lead",
+                "collaboration_style": "Hybrid",
+                "communication_pref": "Slack/Discord",
+                "project_interest": [
+                    "Blockchain",
+                    "Fintech",
+                    "Web3"
+                ],
+                "quick_team_opt_in": true,
+                "created_date": "2025-09-03 16:45:12",
+                "last_active": "2025-09-06 08:15:30"
+            },
+            {
+                "name": "Michael Brown",
+                "skills": [
+                    "unity",
+                    "c#",
+                    "game development",
+                    "3d modeling",
+                    "vr/ar"
+                ],
+                "availability": [
+                    "Right Now",
+                    "Full-time",
+                    "Weekends"
+                ],
+                "domain": [
+                    "Game Development"
+                ],
+                "experience_level": "Advanced",
+                "bio": "Game developer with experience in Unity and Unreal Engine. Passionate about creating immersive gaming experiences.",
+                "hackathon_experience": "3-5 Hackathons",
+                "preferred_team_size": 4,
+                "leadership_interest": "Love to Lead",
+                "collaboration_style": "In-Person Preferred",
+                "communication_pref": "Slack/Discord",
+                "project_interest": [
+                    "Games",
+                    "VR/AR",
+                    "3D Modeling"
+                ],
+                "quick_team_opt_in": true,
+                "created_date": "2025-08-30 15:20:33",
+                "last_active": "2025-09-06 12:15:44"
+            },
+            {
+                "name": "Sarah Williams",
+                "skills": [
+                    "java",
+                    "spring boot",
+                    "microservices",
+                    "api development",
+                    "docker"
+                ],
+                "availability": [
+                    "Evenings",
+                    "Part-time",
+                    "Weekends"
+                ],
+                "domain": [
+                    "Web Development",
+                    "Backend Development"
+                ],
+                "experience_level": "Intermediate",
+                "bio": "Backend developer specializing in Java and microservices architecture. Enjoy solving complex technical challenges.",
+                "hackathon_experience": "3-5 Hackathons",
+                "preferred_team_size": 4,
+                "leadership_interest": "Can Lead if Needed",
+                "collaboration_style": "Remote First",
+                "communication_pref": "Flexible",
+                "project_interest": [
+                    "Web Apps",
+                    "API Development",
+                    "Microservices"
+                ],
+                "quick_team_opt_in": true,
+                "created_date": "2025-09-02 09:15:28",
+                "last_active": "2025-09-06 10:20:15"
+            }
+        ],
+        "formation_time": "11:12:45",
+        "compatibility": 88.16666666666666,
+        "type": "instant_match"
+    }
+}

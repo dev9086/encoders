@@ -1,0 +1,63 @@
+{
+    "Hackathon": {
+        "domains": {
+            "Web Development": [
+                "html",
+                "css",
+                "javascript",
+                "react",
+                "angular",
+                "node.js",
+                "django"
+            ],
+            "Game Development": [
+                "unity",
+                "unreal engine",
+                "c#",
+                "c++",
+                "gamedev"
+            ]
+        }
+    },
+    "Study Group": {
+        "domains": {
+            "Computer Science & Engineering": [
+                "data structures",
+                "algorithms",
+                "operating systems",
+                "database systems",
+                "computer networks",
+                "software engineering",
+                "programming",
+                "theory of computation"
+            ]
+        }
+    },
+    "Clubs": {
+        "domains": {
+            "Dance Club": [
+                "dance",
+                "choreography",
+                "performance",
+                "classical",
+                "western",
+                "freestyle"
+            ],
+            "Music Club": [
+                "instrument",
+                "vocal",
+                "composing",
+                "practice",
+                "performance",
+                "theory"
+            ]
+        }
+    },
+    "gardening": {
+        "domains": {
+            "gardner": [
+                "watering"
+            ]
+        }
+    }
+}
