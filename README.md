@@ -99,3 +99,30 @@ This project is licensed under the MIT License.
 
 Support
 For support or questions, please open an issue in the GitHub repository.
+
+📊 Example Use Cases
+
+🏢 Hackathon Organizers – Provide participants a tool to find teammates quickly.
+
+👨‍💻 Developers & Designers – Find complementary skills for better collaboration.
+
+🎓 Students – Build strong, diverse teams for projects or competitions.
+
+🔮 Future Improvements
+
+🌍 Multi-language support
+
+📨 Real-time team chat integration
+
+🧠 Advanced ML-based role recommendation
+
+☁️ Cloud database (instead of local JSON)
+
+🤝 Contributing
+
+Contributions are welcome! 🎉
+Feel free to fork the repo, open issues, or submit PRs to improve HackMate - CYHI Quick Teams.
+
+📜 License
+
+This project is licensed under the MIT License – free to use, modify, and distribute.
